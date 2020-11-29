@@ -1,0 +1,54 @@
+<body>
+    <div id="chatText">
+    </div>
+    <input type="text" id="textToSend" autofocus>
+    <script>
+        var connection = new WebSocket('ws://' + window.location.hostname + ':8122');
+        var chatText = document.getElementById("chatText");
+        var textInput = document.getElementById("textToSend");
+        
+        function sendMessage()
+        {
+            var msg = JSON.stringify({ message: textInput.value});
+            textInput.value = "";
+            connection.send(msg);
+        }
+
+        // Send the message when the user hits Enter / carriage return.
+        textInput.onkeypress = function(event)
+        {
+            if (event.charCode === 13)
+                sendMessage();
+        }
+
+        // Returns a new div constructed from a message received from the server.
+        function messageDiv(msgObj)
+        {
+            var node = document.createElement("div");
+            node.classList.add("message");
+            node.style.backgroundColor = msgObj.background;
+
+            var nameNode = document.createElement("div");
+            nameNode.classList.add("name");
+            nameNode.textContent = msgObj.name;
+            nameNode.style.color = msgObj.colour;
+            node.appendChild(nameNode);
+            node.appendChild(document.createTextNode(msgObj.text));
+            return node;
+        }
+        
+        connection.onopen = function() {
+        };
+            
+        connection.onerror = function(error) {
+            alert('WebSocket error: ' + error);
+        };
+        
+        connection.onmessage = function(msg) {
+            var msgObj = JSON.parse(msg.data);
+            chatText.appendChild(messageDiv(msgObj));
+            document.body.scrollTop = document.body.scrollHeight;
+        };
+    </script>
+</body>
+</html>
