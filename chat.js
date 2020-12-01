@@ -40,15 +40,40 @@ wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(msg) {
       console.log(`received: ${msg}`);
       var msgObject = JSON.parse(msg);
+
+      if (msgObject.message.trim().length == 0)
+        return;
+        
       if (!ws.name)
       {
         console.log("Setting name to " + msgObject.message);
+        var othersString;
+        if (wss.clients.size == 1)
+          othersString = "You are the first to join the chat.";
+        else
+        {
+          var others = [];
+          wss.clients.forEach(function add(client) {
+            if (client !== ws)
+              others.push(client.name);
+          });
+          var otherNames = ``;
+          if (others.length > 1)
+          {
+            otherNames = `${others.slice(1).join(', ')} and ${others[0]}`;
+          }
+          else
+          {
+            otherNames = others[0];
+          }
+          othersString = `You are joining ${otherNames} in the chat.`;
+        }
         ws.name = msgObject.message;
         ws.send(JSON.stringify(new Object({ 
           "name": "Chat Host", 
           "colour": hostColour, 
           "background": hostBackground, 
-          "text": `Hi ${ws.name}, welcome to the chat!`})));
+          "text": `Hi, ${ws.name}! ${othersString}`})));
 
         wss.broadcast(new Object({
           "name": "Chat Host",
