@@ -55,7 +55,7 @@ wss.on('connection', function connection(ws) {
         {
           var others = [];
           wss.clients.forEach(function add(client) {
-            if (client !== ws)
+            if (client !== ws && client.readyState === WebSocket.OPEN)
               others.push(client.name);
           });
           var otherNames = ``;
