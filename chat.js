@@ -1,8 +1,9 @@
 // WebSocket chat server
 var http = require("http");
 var fs = require("fs");
-var pagetop = fs.readFileSync('pagetop.html');
-var pagebot = fs.readFileSync('pagebot.html');
+// TODO: Uncomment when done working on CSS and html.
+// var pagetop = fs.readFileSync('pagetop.html');
+// var pagebot = fs.readFileSync('pagebot.html');
 
 const WebSocket = require('ws');
 
@@ -132,23 +133,17 @@ wss.on('connection', function connection(ws) {
     "text": "Hi! What's your name?"})));
 });
 
-function startPage(response, searchResults)
-{
-  response.writeHead(200, {"Content-Type": "text/html"});
-  response.write(pagetop);
-}
-
-function endPage(response) 
-{
-  response.write(pagebot);
-  response.end();
-}
-
 // Request handler callback
 function onRequest(request, response) 
 {
-    startPage(response);
-    endPage(response);
+  // TODO: Remove when done updating css/html.
+  var pagetop = fs.readFileSync('pagetop.html');
+  var pagebot = fs.readFileSync('pagebot.html');
+
+  response.writeHead(200, {"Content-Type": "text/html"});
+  response.write(pagetop);
+  response.write(pagebot);
+  response.end();
 } // onRequest
 
 http.createServer(onRequest).listen(8121);

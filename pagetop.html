@@ -3,18 +3,15 @@
   <title>piChat</title>
   <meta charset="UTF-8">
   <style>
-    a,p,span,div,form,input { scroll-behavior: smooth; font-size: 20pt; font-family: sans-serif; margin: 0px; padding: 8pt; }
+    html, body { scroll-behavior: smooth; overflow: auto; height: 100%; font-size: 200%; }
+    a,p,span,div,form,input { scroll-behavior: smooth; text-size-adjust: none; font-size: 1rem; font-family: sans-serif; margin: 0px; padding: 8pt; }
     input { width: 96%; border-radius: 8pt; margin: 0 2%; }
-    html, body { overflow: auto; height: 100% }
     .message { border-radius: 8pt; margin: 4pt; padding: 4pt;}
-    .name { font-style: italic; font-size: 15pt; padding: 1pt; }
+    .name { font-style: italic; font-size: 0.75rem; padding: 1pt; }
 
-    @media screen and (max-width: 1200px) {
-      a,p,span,div,form,input { scroll-behavior: smooth; font-size: 36pt; font-family: sans-serif; margin: 0px; padding: 16pt; }
-      input { width: 92%; border-radius: 16pt; margin: 0 4%; }
-      html, body { overflow: auto; height: 100% }
-      .message { border-radius: 16pt; margin: 8pt; padding: 8pt;}
-      .name { font-style: italic; font-size: 24pt; padding: 2pt; }
+    /* Mobile Phone - Larger Fonts */
+    @media only screen and (hover: none) {
+      html, body { font-size: 300%; }
     }
    </style>
 </head>
