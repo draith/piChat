@@ -1,13 +1,27 @@
 // WebSocket chat server
 var http = require("http");
 var fs = require("fs");
-// TODO: Uncomment when done working on CSS and html.
-// var pagetop = fs.readFileSync('pagetop.html');
-// var pagebot = fs.readFileSync('pagebot.html');
+var pagetop = fs.readFileSync('pagetop.html');
+var pagebot = fs.readFileSync('pagebot.html');
 
 const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({ port: 8122 });
+
+var lastTimestamp = Date.now();
+
+// Each client should send a message at least every 5s.
+// Drop any which hasn't sent in the last 6s.
+const heartbeat = setInterval(function checkAlive() {
+  wss.clients.forEach(function each(ws) {
+    if (ws.timestamp < lastTimestamp)
+    {
+      ws.close();
+      console.log(`Client ${ws.name} timed out`);
+    }
+  });
+  lastTimestamp = Date.now();
+}, 6000);
 
 var rgbIndex = 0;
 var hostColour = textRGB();
@@ -39,15 +53,20 @@ wss.on('connection', function connection(ws) {
 
   // Process messages from browser
   ws.on('message', function incoming(msg) {
-      console.log(`received: ${msg}`);
+      ws.timestamp = Date.now();
+      // console.log(`received: ${msg} from ${ws.name} at ${ws.timestamp}`);
+      if (msg === "")
+        return; // Ping from client
+
       var msgObject = JSON.parse(msg);
 
+      // Ignore empty text.
       if (msgObject.message.trim().length == 0)
         return;
-        
+      
+      // If message contains name, introduce to other chatters..
       if (!ws.name)
       {
-        console.log("Setting name to " + msgObject.message);
         var othersString;
         if (wss.clients.size == 1)
           othersString = "You are the first to join the chat.";
@@ -105,7 +124,7 @@ wss.on('connection', function connection(ws) {
         "background": hostBackground,
         "text": `${ws.name} has left the Chat.`
       }),
-      false);
+      true);
 });
 
   rgbIndex++;
@@ -114,12 +133,10 @@ wss.on('connection', function connection(ws) {
 
   // Broadcast to all.
   wss.broadcast = function broadcast(data, toAll) {
-    var formatted = JSON.stringify(data);
-    console.log('broadcast: ' + formatted);
     wss.clients.forEach(function each(client) {
       if (toAll || client !== ws) {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(formatted);
+          client.send(JSON.stringify(data));
         }
       }
     });
@@ -136,10 +153,6 @@ wss.on('connection', function connection(ws) {
 // Request handler callback
 function onRequest(request, response) 
 {
-  // TODO: Remove when done updating css/html.
-  var pagetop = fs.readFileSync('pagetop.html');
-  var pagebot = fs.readFileSync('pagebot.html');
-
   response.writeHead(200, {"Content-Type": "text/html"});
   response.write(pagetop);
   response.write(pagebot);

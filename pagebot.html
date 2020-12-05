@@ -6,12 +6,21 @@
         var connection = new WebSocket('ws://' + window.location.hostname + ':8122');
         var chatText = document.getElementById("chatText");
         var textInput = document.getElementById("textToSend");
+        var pinger = null;
         
+        // Ensure we send a message at least every 5 seconds
+        // so we are not disconnected.
+        function startPing() {
+            pinger = setInterval(function() { connection.send(""); }, 5000);
+        };
+            
         function sendMessage()
         {
+            clearInterval(pinger);
             var msg = JSON.stringify({ message: textInput.value});
             textInput.value = "";
             connection.send(msg);
+            startPing();
         }
 
         // Send the message when the user hits Enter / carriage return.
@@ -21,8 +30,13 @@
                 sendMessage();
         }
 
+        function displayMessage(node) {
+            chatText.appendChild(node);
+            document.body.scrollTop = document.body.scrollHeight;
+        }
+
         // Returns a new div constructed from a message received from the server.
-        function messageDiv(msgObj)
+        function displayChat(msgObj)
         {
             var node = document.createElement("div");
             node.classList.add("message");
@@ -34,20 +48,30 @@
             nameNode.style.color = msgObj.colour;
             node.appendChild(nameNode);
             node.appendChild(document.createTextNode(msgObj.text));
-            return node;
+            displayMessage(node);
         }
-        
-        connection.onopen = function() {
-        };
-            
+
+        function displayError(text)
+        {
+            var node = document.createElement("div");
+            node.classList.add("message");
+            node.classList.add("error");
+            node.appendChild(document.createTextNode(text));
+            displayMessage(node);
+        }
+
+        connection.onopen = startPing;
+
+        connection.onclose = function() {
+            displayError("Connection closed");
+        }
+
         connection.onerror = function(error) {
-            alert('WebSocket error: ' + error);
+            displayError('WebSocket error: ' + error);
         };
         
         connection.onmessage = function(msg) {
-            var msgObj = JSON.parse(msg.data);
-            chatText.appendChild(messageDiv(msgObj));
-            document.body.scrollTop = document.body.scrollHeight;
+            displayChat(JSON.parse(msg.data));
         };
     </script>
 </body>
